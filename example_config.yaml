@@ -1,0 +1,26 @@
+# Example configuration for target-selector
+
+observatory:
+  name: "Example Observatory"
+  latitude: 40.0  # degrees North
+  longitude: -105.0  # degrees West
+  elevation: 1600  # meters
+
+targets:
+  - name: "M31"
+    identifier: "Andromeda Galaxy"
+    # OR provide coordinates:
+    # ra: 0.6915  # degrees
+    # dec: 41.27  # degrees
+  
+  - name: "M42"
+    ra: 83.82  # degrees
+    dec: -5.39  # degrees
+
+date_range:
+  start: "2026-06-14"
+  end: "2026-06-21"
+
+constraints:
+  min_elevation: 30  # degrees above horizon
+  min_duration: 120  # minutes of continuous darkness
