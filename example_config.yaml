@@ -8,7 +8,7 @@ observatory:
 
 targets:
   - name: "M31"
-    identifier: "Andromeda Galaxy"
+    id: "Andromeda Galaxy"
     # OR provide coordinates:
     # ra: 0.6915  # degrees
     # dec: 41.27  # degrees
