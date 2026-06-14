@@ -22,7 +22,7 @@ class ObservationPlanner:
         self.config_path = Path(config_path)
         self.config = self._load_config()
 
-        self._validate_config(self.config)
+        self._validate_config()
 
 
     def _load_config(self) -> Dict[str, Any]:
@@ -89,7 +89,7 @@ class ObservationPlanner:
             
             # Create a mapping of identifier to coordinates
             for result in results:
-                identifier = result["MAIN_ID"].decode() if isinstance(result["MAIN_ID"], bytes) else result["MAIN_ID"]
+                identifier = result["user_specified_id"].decode() if isinstance(result["user_specified_id"], bytes) else result["user_specified_id"]
                 
                 # Find the original identifier in our list (case-insensitive match)
                 matched_identifier = None
@@ -103,12 +103,13 @@ class ObservationPlanner:
                 
                 # Update the target with coordinates
                 target_idx = target_indices[matched_identifier]
-                targets[target_idx]["ra"] = float(result["RA"])
-                targets[target_idx]["dec"] = float(result["DEC"])
-            
+                targets[target_idx]["ra"] = float(result["ra"])
+                targets[target_idx]["dec"] = float(result["dec"])
+
             # Verify all targets were found
             for identifier in targets_to_lookup:
                 target_idx = target_indices[identifier]
+
                 if "ra" not in targets[target_idx]:
                     raise ValueError(f"Target '{identifier}' not found in SIMBAD")
                     

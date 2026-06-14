@@ -7,8 +7,7 @@ observatory:
   elevation: 1600  # meters
 
 targets:
-  - name: "M31"
-    id: "Andromeda Galaxy"
+  - id: "M31"
     # OR provide coordinates:
     # ra: 0.6915  # degrees
     # dec: 41.27  # degrees
