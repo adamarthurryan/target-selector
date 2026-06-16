@@ -50,17 +50,16 @@ class ObservationPlanner:
         ValueError
             If the configuration is invalid
         """
-        validate_config(self.config)
-    
+        self.config = validate_config(self.config)
+
     def _lookup_targets(self):
         """
         Look up target information in astronomical catalogs.
 
-        Targets are specified in the configuration and may include names, coordinates, etc. 
+        Targets are specified in the configuration and may include names, coordinates, etc.
         This method will query catalogs (e.g., SIMBAD, Gaia) to retrieve necessary information
         """
-        targets = self.config["targets"]
-        self.config["targets"] = lookup_targets(targets)
+        self.config.targets = lookup_targets(self.config.targets)
 
     def run(self):
         """

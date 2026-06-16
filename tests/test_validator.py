@@ -7,7 +7,7 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
-from target_selector.validator import validate_config
+from target_selector.validator import Config, validate_config
 
 
 def make_valid_config():
@@ -40,25 +40,25 @@ def make_valid_config():
 
 
 def test_validate_config_accepts_valid_config():
-    config = make_valid_config()
+    config = validate_config(make_valid_config())
 
-    validate_config(config)
+    assert isinstance(config, Config)
 
-    assert config["observatory"]["latitude"] == 40.0
-    assert config["observatory"]["longitude"] == -105.0
-    assert config["observatory"]["elevation"] == 1600.0
+    assert config.observatory.latitude == 40.0
+    assert config.observatory.longitude == -105.0
+    assert config.observatory.elevation == 1600.0
 
-    assert isinstance(config["date_range"]["start"], datetime)
-    assert isinstance(config["date_range"]["end"], datetime)
-    assert config["date_range"]["start"].year == 2026
+    assert isinstance(config.date_range.start, datetime)
+    assert isinstance(config.date_range.end, datetime)
+    assert config.date_range.start.year == 2026
 
-    assert config["constraints"]["min_elevation"] == 30.0
-    assert config["constraints"]["min_duration"] == 120
+    assert config.constraints.min_elevation == 30.0
+    assert config.constraints.min_duration == 120
 
-    target = config["targets"][0]
-    assert isinstance(target["coord"], SkyCoord)
-    assert target["coord"].ra.deg == pytest.approx(83.82)
-    assert target["coord"].dec.deg == pytest.approx(-5.39)
+    target = config.targets[0]
+    assert isinstance(target.coord, SkyCoord)
+    assert target.coord.ra.deg == pytest.approx(83.82)
+    assert target.coord.dec.deg == pytest.approx(-5.39)
 
 
 @pytest.mark.parametrize(
@@ -116,3 +116,8 @@ def test_validate_config_accepts_valid_config():
 def test_validate_config_rejects_invalid_config(config, message):
     with pytest.raises(ValueError, match=message):
         validate_config(config)
+
+
+def test_validate_config_rejects_non_mapping():
+    with pytest.raises(ValueError, match="Configuration must be a mapping"):
+        validate_config(["not", "a", "mapping"])
