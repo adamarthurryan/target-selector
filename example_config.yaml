@@ -12,27 +12,15 @@ targets:
     # ra: 0.6915  # degrees
     # dec: 41.27  # degrees
   
-  - id: "3c271"
-  - id: "Mrk 421"
-
-  - id: "AO 0235+16"
-  - id: "Markarian 421"
-  - id: "S5 0716+71"
-  - id: "BL Lacertae"
-  - id: "Markarian 501"
-  - id: "3C 66A"
-  - id: "OJ 287"
-  - id: "3C 454.3"
-  - id: "3C 279"
-
-  - name: "M42"
+  - id: "M42"
     ra: 83.82  # degrees
     dec: -5.39  # degrees
 
 date_range:
-  start: "2026-06-14"
-  end: "2026-06-21"
+  start: "2026-06-01"
+  end: "2026-06-30"
 
 constraints:
   min_elevation: 30  # degrees above horizon
+  max_airmass: 1.5
   min_duration: 120  # minutes of continuous darkness

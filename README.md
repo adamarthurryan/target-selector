@@ -32,28 +32,7 @@ pip install -e .
 
 ## Usage
 
-Create a YAML configuration file with your observation parameters:
-
-```yaml
-observatory:
-  latitude: 40.0
-  longitude: -105.0
-
-targets:
-  - name: M31
-    identifier: Andromeda Galaxy
-  - name: M42
-    ra: 83.8
-    dec: -5.4
-
-date_range:
-  start: 2026-06-14
-  end: 2026-06-21
-
-constraints:
-  min_elevation: 30
-  min_duration: 120  # minutes
-```
+Create a YAML configuration file with your observation parameters: see **example_config.yaml** for an example.
 
 Then run:
 
