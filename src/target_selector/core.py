@@ -1,5 +1,6 @@
 """Core functionality for astronomical observation planning."""
 
+from importlib.resources import path
 from logging import config
 
 import yaml
@@ -7,59 +8,40 @@ from pathlib import Path
 from typing import Dict, Any
 
 from target_selector.lookup import lookup_targets
-from target_selector.validator import validate_config
-from target_selector.astro import observable_times
+from target_selector.validator import Targets, Observatory
+from target_selector.astro import observable_calendar
 
 class ObservationPlanner:
     """Plan observations for astronomical targets."""
 
-    def __init__(self, config_path: Path):
+    def __init__(self, targets_path: Path, observatory_path: Path, date=False, calendar=False, verbose=False):
         """
         Initialize the observation planner.
 
         Parameters
         ----------
-        config_path : Path
-            Path to YAML configuration file
+        targets_path : Path
+            Path to YAML targets file
+        observatory_path : Path
+            Path to YAML observatory location file
+        date : Time, optional
+            Query for a specific date (default: False)
+        calendar : bool, optional
+            Whether to display an observability calendar (default: False)
+        verbose : bool, optional        
+            Whether to enable verbose output (default: False)
         """
-        self.config_path = Path(config_path)
-        self.config = self._load_config()
 
-        self._validate_config()
+        self._targets_path = targets_path
+        self._observatory_path = observatory_path
+        self._date = date
+        self._calendar = calendar
+        self._verbose = verbose
 
-
-    def _load_config(self) -> Dict[str, Any]:
-        """
-        Load and parse the YAML configuration file.
-
-        Returns
-        -------
-        dict
-            Configuration dictionary
-        """
-        with open(self.config_path, "r") as f:
+    def _load_config(self, path: Path) -> Dict[str, Any]:
+        """Load YAML configuration from the specified path."""
+        with open(path, "r") as f:
             return yaml.safe_load(f)
-        
-
-    def _validate_config(self):
-        """
-        Validate the structure and contents of the configuration.
-
-        Raises
-        ------
-        ValueError
-            If the configuration is invalid
-        """
-        self.config = validate_config(self.config)
-
-    def _lookup_targets(self):
-        """
-        Look up target information in astronomical catalogs.
-
-        Targets are specified in the configuration and may include names, coordinates, etc.
-        This method will query catalogs (e.g., SIMBAD, Gaia) to retrieve necessary information
-        """
-        self.config.targets = lookup_targets(self.config.targets)
 
     def run(self):
         """
@@ -68,12 +50,30 @@ class ObservationPlanner:
         Loads targets from config, calculates visibility windows,
         and outputs results to stdout.
         """
+
+        targets_path = Path(self._targets_path)
+        targets_config = self._load_config(targets_path)
+        targets = Targets.model_validate(targets_config)
+
+        observatory_path = Path(self._observatory_path)
+        observatory_config = self._load_config(observatory_path)
+        observatory = Observatory.model_validate(observatory_config)
+
         # Look up targets in catalogs
-        self._lookup_targets()
+        targets = lookup_targets(targets)
         
 
         # Calculate visibility windows (TODO)
         # TODO: Implement observation planning logic
 
-        table=observable_times(self.config)
-        print(table)
+        calendar=observable_calendar(observatory, targets)
+
+        #TODO print header row
+        print("Target ID   | Jan  Feb  Mar  Apr  May  Jun  Jul  Aug  Sep  Oct  Nov  Dec")
+        print("------------------------------------------------------------------------")
+        for row in calendar:
+            print(f"{row['id']:11.11} |", end="")
+            for month in range(1, 13):
+                observable = month in row['months']
+                print(f"{ '  X  ' if observable else '     '}", end="")
+            print()

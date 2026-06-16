@@ -6,11 +6,11 @@ import astropy.units as u
 from astropy.time import Time
 from astropy.coordinates import EarthLocation
 
-from astroplan import Observer, FixedTarget, observability_table
+from astroplan import Observer, FixedTarget, observability_table, months_observable
 from astroplan import (AltitudeConstraint, AirmassConstraint,
                        AtNightConstraint, TimeConstraint)
 
-from target_selector.validator import Config, Constraints, Observatory, Target
+from target_selector.validator import Constraints, Observatory, Targets
 
 def _create_observer(observatory: Observatory) -> Observer:
     location = EarthLocation.from_geodetic(
@@ -42,14 +42,20 @@ def _create_constraints(constraints: Optional[Constraints]) -> List:
 
     constraint_list.append(AtNightConstraint.twilight_astronomical())
 
-    print(constraint_list)
     return constraint_list
 
-def observable_times(config: Config):
-    print("Calculating observable times...")
-    date_range = [Time(config.date_range.start), Time(config.date_range.end)]
-    constraints = _create_constraints(config.constraints)
-    targets = _create_fixed_targets(config.targets)
-    observer = _create_observer(config.observatory)
+#date_range = [Time.now(), Time.now() + 7*u.day]
+    
+def observable_calendar(observatory: Observatory, targets: Targets):
+    constraints = _create_constraints(targets.constraints)
+    targets = _create_fixed_targets(targets.targets)
+    observer = _create_observer(observatory)
 
-    return observability_table(constraints, observer, targets, time_range=date_range)
+    rows = []
+    print(f"Calculating observability calendar for targets...")
+    months_all = months_observable(constraints, observer, targets, time_grid_resolution=1.5*u.hour)
+    for index, target in enumerate(targets):
+        rows.append({"id": target.name, "months": months_all[index]})
+
+
+    return rows

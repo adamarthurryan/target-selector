@@ -1,0 +1,6 @@
+# Example observatory configuration for target-selector
+
+name: "Example Observatory"
+latitude: 40.0  # degrees North
+longitude: -105.0  # degrees West
+elevation: 1600  # meters

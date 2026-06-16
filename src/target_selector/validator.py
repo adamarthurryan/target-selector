@@ -22,6 +22,7 @@ class Observatory(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def _check_required_keys(cls, data: Any) -> Any:
+
         if not isinstance(data, dict) or not {"latitude", "longitude", "elevation"} <= data.keys():
             raise ValueError(
                 "'observatory' must include 'latitude', 'longitude', and 'elevation' (use canonical keys)"
@@ -34,8 +35,7 @@ class Target(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    id: Optional[str] = None
-    name: Optional[str] = None
+    id: str = None
     ra: Optional[float] = None
     dec: Optional[float] = None
     coord: Optional[SkyCoord] = None
@@ -103,15 +103,10 @@ class Constraints(BaseModel):
             raise ValueError("'constraints' must include 'min_elevation' and 'min_duration'")
         return data
 
+class Targets(BaseModel):
+    """Configuration for a list of targets."""
 
-class Config(BaseModel):
-    """Top-level target-selector configuration."""
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    observatory: Observatory
     targets: List[Target]
-    date_range: DateRange
     constraints: Optional[Constraints] = None
 
     @field_validator("targets")
@@ -120,28 +115,3 @@ class Config(BaseModel):
         if not value:
             raise ValueError("'targets' must be a non-empty list")
         return value
-
-
-def validate_config(config: Dict[str, Any]) -> Config:
-    """
-    Validate the structure and contents of a configuration dictionary.
-
-    Parameters
-    ----------
-    config : dict
-        Configuration dictionary, as loaded from YAML.
-
-    Returns
-    -------
-    Config
-        A validated, structured representation of the configuration.
-
-    Raises
-    ------
-    ValueError
-        If the configuration is invalid.
-    """
-    if not isinstance(config, dict):
-        raise ValueError("Configuration must be a mapping (YAML top-level must be a mapping)")
-
-    return Config.model_validate(config)
