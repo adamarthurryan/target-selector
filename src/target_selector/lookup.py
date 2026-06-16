@@ -1,14 +1,16 @@
 """Catalog lookup helpers for target-selector."""
 
-from typing import Any, Dict, List
+from typing import Dict, List
 import copy
 
 from astroquery.simbad import Simbad
 from astropy.coordinates import SkyCoord
 import astropy.units as u
 
+from target_selector.validator import Target
 
-def lookup_targets(targets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+
+def lookup_targets(targets: List[Target]) -> List[Target]:
 
     targets = copy.deepcopy(targets)
 
@@ -16,15 +18,15 @@ def lookup_targets(targets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     target_indices: Dict[str, int] = {}
 
     for i, target in enumerate(targets):
-        if "ra" in target and "dec" in target:
+        if target.ra is not None and target.dec is not None:
             continue
 
-        if "id" not in target:
+        if not target.id:
             raise ValueError(
-                f"Target '{target.get('name', 'unknown')}' has no coordinates and no identifier for lookup"
+                f"Target '{target.name or 'unknown'}' has no coordinates and no identifier for lookup"
             )
 
-        identifier = target["id"]
+        identifier = target.id
         targets_to_lookup.append(identifier)
         target_indices[identifier] = i
 
@@ -52,17 +54,17 @@ def lookup_targets(targets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             continue
 
         target_idx = target_indices[matched_identifier]
-        targets[target_idx]["ra"] = float(result["ra"])
-        targets[target_idx]["dec"] = float(result["dec"])
-        targets[target_idx]["coord"] = SkyCoord(
-            ra=targets[target_idx]["ra"] * u.deg,
-            dec=targets[target_idx]["dec"] * u.deg,
+        targets[target_idx].ra = float(result["ra"])
+        targets[target_idx].dec = float(result["dec"])
+        targets[target_idx].coord = SkyCoord(
+            ra=targets[target_idx].ra * u.deg,
+            dec=targets[target_idx].dec * u.deg,
             frame="icrs",
         )
 
     for identifier in targets_to_lookup:
         target_idx = target_indices[identifier]
-        if "ra" not in targets[target_idx]:
+        if targets[target_idx].ra is None:
             #TODO: don't need to fail on missing targets, just warn and skip
             raise ValueError(f"Target '{identifier}' not found in SIMBAD")
 

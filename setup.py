@@ -28,6 +28,7 @@ setup(
         "astropy>=5.0",
         "astroquery>=0.4.6",
         "pyyaml>=6.0",
+        "pydantic>=2.0",
     ],
     entry_points={
         "console_scripts": [
