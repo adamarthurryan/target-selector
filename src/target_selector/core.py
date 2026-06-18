@@ -4,17 +4,18 @@ from importlib.resources import path
 from logging import config
 
 import yaml
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any
 
 from target_selector.lookup import lookup_targets
 from target_selector.validator import Targets, Observatory
-from target_selector.astro import observable_calendar
+from target_selector.astro import observable_calendar, observable_today, get_local_timezone
 
 class ObservationPlanner:
     """Plan observations for astronomical targets."""
 
-    def __init__(self, targets_path: Path, observatory_path: Path, date=False, calendar=False, verbose=False):
+    def __init__(self, targets_path: Path, observatory_path: Path, date=False, calendar=False, today=False, verbose=False):
         """
         Initialize the observation planner.
 
@@ -28,7 +29,9 @@ class ObservationPlanner:
             Query for a specific date (default: False)
         calendar : bool, optional
             Whether to display an observability calendar (default: False)
-        verbose : bool, optional        
+        today : bool, optional
+            Whether to display tonight's visibility windows (default: False)
+        verbose : bool, optional
             Whether to enable verbose output (default: False)
         """
 
@@ -36,6 +39,7 @@ class ObservationPlanner:
         self._observatory_path = observatory_path
         self._date = date
         self._calendar = calendar
+        self._today = today
         self._verbose = verbose
 
     def _load_config(self, path: Path) -> Dict[str, Any]:
@@ -61,7 +65,10 @@ class ObservationPlanner:
 
         # Look up targets in catalogs
         targets = lookup_targets(targets)
-        
+
+        if self._today:
+            self._display_today(observatory, targets)
+            return
 
         # Calculate visibility windows (TODO)
         # TODO: Implement observation planning logic
@@ -77,3 +84,26 @@ class ObservationPlanner:
                 observable = month in row['months']
                 print(f"{ '  X  ' if observable else '     '}", end="")
             print()
+
+    def _display_today(self, observatory, targets):
+        """Display target visibility windows for tonight's observation night."""
+        tz = get_local_timezone(observatory)
+        rows = observable_today(observatory, targets)
+
+        tz_label = datetime.now(tz).strftime("%Z") or str(tz)
+        print(f"Visibility windows for tonight's observation night (times in local time, {tz_label}):")
+        print(f"{'Target ID':<14} | {'Visible from':<19} | {'Visible until':<19}")
+        print("-" * 60)
+
+        if not rows:
+            print("No targets are observable during tonight's observation window.")
+            return
+
+        for row in rows:
+            start_local = row["start"].to_datetime(timezone=tz)
+            end_local = row["end"].to_datetime(timezone=tz)
+            print(
+                f"{row['id']:<14.14} | "
+                f"{start_local:%Y-%m-%d %H:%M} | "
+                f"{end_local:%Y-%m-%d %H:%M}"
+            )

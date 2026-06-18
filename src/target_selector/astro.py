@@ -1,5 +1,6 @@
 """Astronomical utility functions."""
 
+from datetime import timezone as dt_timezone, timedelta, tzinfo
 from typing import List, Optional
 
 import numpy as np
@@ -11,7 +12,26 @@ from astroplan import Observer, FixedTarget, observability_table, months_observa
 from astroplan import (AltitudeConstraint, AirmassConstraint,
                        AtNightConstraint, TimeConstraint)
 
-from target_selector.validator import Constraints, Observatory, Targets
+from target_selector.validator import Constraints, Observatory, Target, Targets
+
+def get_local_timezone(observatory: Observatory) -> tzinfo:
+    """Return a tzinfo describing the observatory's local time.
+
+    Uses the configured IANA timezone (e.g. "America/Denver") when provided,
+    otherwise falls back to a fixed UTC offset estimated from the observatory's
+    longitude (15 degrees per hour).
+    """
+    if observatory.timezone:
+        try:
+            from zoneinfo import ZoneInfo
+            return ZoneInfo(observatory.timezone)
+        except Exception:
+            import pytz
+            return pytz.timezone(observatory.timezone)
+
+    offset_hours = int(round(observatory.longitude / 15.0))
+    return dt_timezone(timedelta(hours=offset_hours))
+
 
 def _create_observer(observatory: Observatory) -> Observer:
     location = EarthLocation.from_geodetic(
