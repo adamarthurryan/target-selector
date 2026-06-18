@@ -38,14 +38,21 @@ def main():
         action="store_true",
         help="display an observability calendar"
     )
+    parser.add_argument(
+        "-t",
+        "--today",
+        action="store_true",
+        help="display target visibility windows for tonight's observation night"
+    )
 
     args = parser.parse_args()
 
     try:
-        planner = ObservationPlanner(args.targets, 
-                                     OBSERVATORY_PATH, 
-                                     date=args.date, 
-                                     calendar=args.calendar, 
+        planner = ObservationPlanner(args.targets,
+                                     OBSERVATORY_PATH,
+                                     date=args.date,
+                                     calendar=args.calendar,
+                                     today=args.today,
                                      verbose=args.verbose)
         planner.run()
     except FileNotFoundError as e:

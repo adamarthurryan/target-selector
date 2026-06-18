@@ -18,6 +18,7 @@ class Observatory(BaseModel):
     longitude: float
     elevation: float
     name: str = "Unnamed Observatory"
+    timezone: Optional[str] = None
 
     @model_validator(mode="before")
     @classmethod
