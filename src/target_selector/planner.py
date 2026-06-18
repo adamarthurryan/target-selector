@@ -59,3 +59,17 @@ def observable_calendar(observatory: Observatory, targets: Targets):
 
 
     return rows
+
+def observable_today(observatory: Observatory, targets: Targets):
+    constraints = _create_constraints(targets.constraints)
+    targets = _create_fixed_targets(targets.targets)
+    observer = _create_observer(observatory)
+
+    rows = []
+    print(f"Calculating observability calendar for targets...")
+    months_all = months_observable(constraints, observer, targets, time_grid_resolution=1.5*u.hour)
+    for index, target in enumerate(targets):
+        rows.append({"id": target.name, "months": months_all[index]})
+
+
+    return rows
